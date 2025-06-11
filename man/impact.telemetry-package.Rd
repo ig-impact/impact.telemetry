@@ -4,11 +4,11 @@
 \name{impact.telemetry-package}
 \alias{impact.telemetry}
 \alias{impact.telemetry-package}
-\title{impact.telemetry: What the Package Does (One Line, Title Case)}
+\title{impact.telemetry: A Function Telemetry Toolkit for IMPACT Initiatives}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-What the package does (one paragraph).
+A toolkit for adding telemetry to R functions, intended for use within the IMPACT Initiatives ecosystem. Utilizes a wrapper function to log execution metadata to a file. The configuration and data schema are tailored for IMPACT's internal package monitoring requirements.
 }
 \author{
 \strong{Maintainer}: Iyed GHEDAMSI \email{iyed.ghedamsi@impact-initiatives.org}

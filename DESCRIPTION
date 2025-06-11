@@ -1,11 +1,15 @@
 Package: impact.telemetry
-Title: What the Package Does (One Line, Title Case)
+Title: A Function Telemetry Toolkit for IMPACT Initiatives
 Version: 0.0.0.9000
 Authors@R: c(
     person("Iyed", "GHEDAMSI", , "iyed.ghedamsi@impact-initiatives.org", role = c("aut", "cre")),
     person("IMPACT Initiatives", role = "cph")
   )
-Description: What the package does (one paragraph).
+Description: A toolkit for adding telemetry to R functions, intended for
+  use within the IMPACT Initiatives ecosystem. Utilizes a wrapper
+  function to log execution metadata to a file. The configuration and
+  data schema are tailored for IMPACT's internal package monitoring
+  requirements.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
