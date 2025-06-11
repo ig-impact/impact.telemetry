@@ -11,7 +11,12 @@
 What the package does (one paragraph).
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com}
+\strong{Maintainer}: Iyed GHEDAMSI \email{iyed.ghedamsi@impact-initiatives.org}
+
+Other contributors:
+\itemize{
+  \item IMPACT Initiatives [copyright holder]
+}
 
 }
 \keyword{internal}
