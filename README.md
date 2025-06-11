@@ -27,29 +27,57 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(impact.telemetry)
-## basic example code
-```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+log_file <- start_telemetry_logging()
+#> Telemetry logging started. Log file: telemetry-94938.log
+
+log_add <- with_telemetry(function(a, b) {
+  a + b
+}, event_name = "add", log_args = TRUE, log_result = TRUE)
+
+result <- log_add(1, 2)
+
+result <- log_add(1, 20)
+```
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+lapply(readLines(log_file, n = 10), jsonlite::fromJSON)
+#> [[1]]
+#> [[1]]$timestamp
+#> [1] "2025-06-11 15:50:28"
+#> 
+#> [[1]]$event
+#> [1] "add"
+#> 
+#> [[1]]$status
+#> [1] "success"
+#> 
+#> [[1]]$args
+#> [1] 1 2
+#> 
+#> [[1]]$duration_ms
+#> [1] 0.012
+#> 
+#> [[1]]$result
+#> [1] 3
+#> 
+#> 
+#> [[2]]
+#> [[2]]$timestamp
+#> [1] "2025-06-11 15:50:28"
+#> 
+#> [[2]]$event
+#> [1] "add"
+#> 
+#> [[2]]$status
+#> [1] "success"
+#> 
+#> [[2]]$args
+#> [1]  1 20
+#> 
+#> [[2]]$duration_ms
+#> [1] 0.01
+#> 
+#> [[2]]$result
+#> [1] 21
 ```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
