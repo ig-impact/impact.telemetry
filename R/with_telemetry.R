@@ -23,6 +23,15 @@
 #' @return A new function that is a version of `f` with telemetry enabled.
 #' @export
 #' @examples
+#' # Define a function
+#' calculate_sum <- function(a, b) a + b
+#'
+#' # Create an instrumented version
+#' logged_sum <- with_telemetry(calculate_sum, event_name = "sum_calculation")
+#'
+#' # Calling this function will now generate a log entry
+#' result <- logged_sum(10, 20)
+#'
 #' start_telemetry_logging() # Initialize logging before using this function
 #'
 #' # Define a function
@@ -40,6 +49,14 @@ with_telemetry <- function(f,
   event <- event_name %||% deparse(substitute(f))
 
   function(...) {
+    if (!isTRUE(.pkg_env$is_initialized)) { # nolint object_usage_linter
+      warning(
+        "impact.telemetry has not been initialized. Call start_telemetry_logging() to enable logging.", # nolint line_length_linter
+        call. = FALSE
+      )
+      # Execute original function without logging and return its result
+      return(f(...))
+    }
     payload <- list(
       timestamp = Sys.time(),
       event = event,
@@ -56,7 +73,9 @@ with_telemetry <- function(f,
       {
         res <- f(...) # Call the original function
 
-        duration <- as.numeric(difftime(Sys.time(), start_time, units = "secs")) * 1000
+        duration <- as.numeric(
+          difftime(Sys.time(), start_time, units = "secs")
+        ) * 1000
         payload$duration_ms <- round(duration, 3)
 
         if (log_result) {
@@ -66,14 +85,16 @@ with_telemetry <- function(f,
         json_payload <- jsonlite::toJSON(payload, auto_unbox = TRUE)
         logger::log_info(
           json_payload,
-          namespace = .telemetry_ns
+          namespace = .telemetry_ns # nolint object_usage_linter
         )
 
         return(res)
       },
       error = function(e) {
         # --- ERROR PATH ---
-        duration <- as.numeric(difftime(Sys.time(), start_time, units = "secs")) * 1000
+        duration <- as.numeric(
+          difftime(Sys.time(), start_time, units = "secs")
+        ) * 1000
         payload$status <- "error"
         payload$error <- e$message
         payload$duration_ms <- round(duration, 3)
@@ -82,7 +103,7 @@ with_telemetry <- function(f,
         # Direct log to the private namespace, skipping the formatter
         logger::log_error(
           json_payload,
-          namespace = .telemetry_ns
+          namespace = .telemetry_ns # nolint object_usage_linter
         )
 
         stop(e) # Re-throw original error

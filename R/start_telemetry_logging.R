@@ -39,28 +39,25 @@ formatter_verbatim <- function(expr, ...) {
 #' start_telemetry_logging(log_dir = tempdir())
 #' }
 start_telemetry_logging <- function(log_dir = NULL, threshold = logger::INFO) {
-  # --- 1. Define Log Directory and File ---
   if (is.null(log_dir)) {
-    # Use a standard, user-specific data directory for persistence
     log_dir <- tools::R_user_dir("impact.telemetry", "data")
   }
 
-  # Ensure the directory exists
   if (!dir.exists(log_dir)) {
     dir.create(log_dir, recursive = TRUE, showWarnings = FALSE)
   }
 
-  # Create a unique log file for each R process
   log_file <- file.path(log_dir, sprintf("telemetry-%s.log", Sys.getpid()))
 
-  # --- 2. Configure the namespaced logger ---
-  # This configuration ONLY applies to the ".telemetry_ns" namespace
-  logger::log_formatter(formatter_verbatim, namespace = .telemetry_ns)
-  logger::log_layout(layout_passthrough, namespace = .telemetry_ns)
-  logger::log_threshold(threshold, namespace = .telemetry_ns)
-  logger::log_appender(logger::appender_file(log_file), namespace = .telemetry_ns)
+  logger::log_formatter(formatter_verbatim, namespace = .telemetry_ns) # nolint object_usage_linter
+  logger::log_layout(layout_passthrough, namespace = .telemetry_ns) # nolint object_usage_linter
+  logger::log_threshold(threshold, namespace = .telemetry_ns) # nolint object_usage_linter
+  logger::log_appender(
+    logger::appender_file(log_file),
+    namespace = .telemetry_ns # nolint object_usage_linter
+  )
 
-  # --- 3. Provide feedback to the user ---
+  .pkg_env$is_initialized <- TRUE
   message("Telemetry logging started. Log file: ", basename(log_file))
   invisible(log_file)
 }

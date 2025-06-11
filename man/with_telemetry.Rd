@@ -37,6 +37,15 @@ the private \code{impact.telemetry} namespace and will only be recorded if
 \code{start_telemetry_logging()} has been called.
 }
 \examples{
+# Define a function
+calculate_sum <- function(a, b) a + b
+
+# Create an instrumented version
+logged_sum <- with_telemetry(calculate_sum, event_name = "sum_calculation")
+
+# Calling this function will now generate a log entry
+result <- logged_sum(10, 20)
+
 start_telemetry_logging() # Initialize logging before using this function
 
 # Define a function
