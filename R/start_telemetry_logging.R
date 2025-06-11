@@ -1,15 +1,8 @@
-#' A logger layout that only returns the raw message, with no metadata.
-#' @noRd
-layout_passthrough <- function(level, msg, ...) {
-  msg
-}
-
-#' A logger formatter that evaluates the message expression verbatim.
-#' This bypasses the default 'glue' formatter, preventing errors with JSON.
-#' @noRd
-formatter_verbatim <- function(expr, ...) {
-  eval(expr, envir = parent.frame(2))
-}
+#' @importFrom cli cli_alert_success
+#' @importFrom tools R_user_dir
+#' @importFrom logger INFO log_layout appender_file log_threshold log_appender
+#' @importFrom logger layout_json
+NULL
 
 #' Internal helper for providing a default value for NULL.
 #' @noRd
@@ -49,15 +42,18 @@ start_telemetry_logging <- function(log_dir = NULL, threshold = logger::INFO) {
 
   log_file <- file.path(log_dir, sprintf("telemetry-%s.log", Sys.getpid()))
 
-  logger::log_formatter(formatter_verbatim, namespace = .telemetry_ns) # nolint object_usage_linter
-  logger::log_layout(layout_passthrough, namespace = .telemetry_ns) # nolint object_usage_linter
-  logger::log_threshold(threshold, namespace = .telemetry_ns) # nolint object_usage_linter
+  # Use the logger's built-in JSON layout instead of custom formatters.
+  logger::log_layout(logger::layout_json(), namespace = .telemetry_ns)
+  logger::log_threshold(threshold, namespace = .telemetry_ns)
   logger::log_appender(
     logger::appender_file(log_file),
-    namespace = .telemetry_ns # nolint object_usage_linter
+    namespace = .telemetry_ns
   )
 
   .pkg_env$is_initialized <- TRUE
-  message("Telemetry logging started. Log file: ", basename(log_file))
+
+  # Use cli for more structured and aesthetically pleasing console messages.
+  cli::cli_alert_success("Telemetry logging started. Log file: {.path {basename(log_file)}}")
+
   invisible(log_file)
 }

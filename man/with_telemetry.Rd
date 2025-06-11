@@ -14,12 +14,10 @@ event being logged. If \code{NULL} (the default), the name of the function \code
 is used.}
 
 \item{log_args}{A boolean flag. If \code{TRUE}, the function's arguments are
-captured in the log entry. This is a primary control for privacy and
-verbosity.}
+captured in the log entry.}
 
 \item{log_result}{A boolean flag. If \code{TRUE}, the function's return value is
-captured in the log entry. This should be used with caution for functions
-that return large objects or sensitive data.}
+captured in the log entry.}
 }
 \value{
 A new function that is a version of \code{f} with telemetry enabled.
@@ -37,15 +35,6 @@ the private \code{impact.telemetry} namespace and will only be recorded if
 \code{start_telemetry_logging()} has been called.
 }
 \examples{
-# Define a function
-calculate_sum <- function(a, b) a + b
-
-# Create an instrumented version
-logged_sum <- with_telemetry(calculate_sum, event_name = "sum_calculation")
-
-# Calling this function will now generate a log entry
-result <- logged_sum(10, 20)
-
 start_telemetry_logging() # Initialize logging before using this function
 
 # Define a function

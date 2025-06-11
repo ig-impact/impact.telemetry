@@ -1,3 +1,7 @@
+#' @importFrom cli cli_warn
+#' @importFrom logger log_info log_error
+NULL
+
 #' Wrap a Function to Add Telemetry Logging
 #'
 #' A higher-order function that takes a target function and returns a new
@@ -15,23 +19,12 @@
 #'   event being logged. If `NULL` (the default), the name of the function `f`
 #'   is used.
 #' @param log_args A boolean flag. If `TRUE`, the function's arguments are
-#'   captured in the log entry. This is a primary control for privacy and
-#'   verbosity.
+#'   captured in the log entry.
 #' @param log_result A boolean flag. If `TRUE`, the function's return value is
-#'   captured in the log entry. This should be used with caution for functions
-#'   that return large objects or sensitive data.
+#'   captured in the log entry.
 #' @return A new function that is a version of `f` with telemetry enabled.
 #' @export
 #' @examples
-#' # Define a function
-#' calculate_sum <- function(a, b) a + b
-#'
-#' # Create an instrumented version
-#' logged_sum <- with_telemetry(calculate_sum, event_name = "sum_calculation")
-#'
-#' # Calling this function will now generate a log entry
-#' result <- logged_sum(10, 20)
-#'
 #' start_telemetry_logging() # Initialize logging before using this function
 #'
 #' # Define a function
@@ -49,22 +42,18 @@ with_telemetry <- function(f,
   event <- event_name %||% deparse(substitute(f))
 
   function(...) {
-    if (!isTRUE(.pkg_env$is_initialized)) { # nolint object_usage_linter
-      warning(
-        "impact.telemetry has not been initialized. Call start_telemetry_logging() to enable logging.", # nolint line_length_linter
-        call. = FALSE
+    if (!isTRUE(.pkg_env$is_initialized)) {
+      cli::cli_warn(
+        "impact.telemetry has not been initialized. Call start_telemetry_logging() to enable logging."
       )
-      # Execute original function without logging and return its result
       return(f(...))
     }
-    payload <- list(
-      timestamp = Sys.time(),
-      event = event,
-      status = "success"
-    )
+
+    # A list to hold optional fields for the JSON log.
+    log_fields <- list()
 
     if (log_args) {
-      payload$args <- list(...)
+      log_fields$args <- list(...)
     }
 
     start_time <- Sys.time()
@@ -76,34 +65,49 @@ with_telemetry <- function(f,
         duration <- as.numeric(
           difftime(Sys.time(), start_time, units = "secs")
         ) * 1000
-        payload$duration_ms <- round(duration, 3)
+
+        log_fields$duration_ms <- round(duration, 3)
 
         if (log_result) {
-          payload$result <- res
+          log_fields$result <- res
         }
 
-        json_payload <- jsonlite::toJSON(payload, auto_unbox = TRUE)
-        logger::log_info(
-          json_payload,
-          namespace = .telemetry_ns # nolint object_usage_linter
+        # Use do.call to pass the list of fields as named arguments to the logger.
+        do.call(
+          logger::log_info,
+          c(
+            list(
+              "{event}: success",
+              event = event,
+              status = "success",
+              namespace = .telemetry_ns
+            ),
+            log_fields
+          )
         )
 
         return(res)
       },
       error = function(e) {
-        # --- ERROR PATH ---
         duration <- as.numeric(
           difftime(Sys.time(), start_time, units = "secs")
         ) * 1000
-        payload$status <- "error"
-        payload$error <- e$message
-        payload$duration_ms <- round(duration, 3)
 
-        json_payload <- jsonlite::toJSON(payload, auto_unbox = TRUE)
-        # Direct log to the private namespace, skipping the formatter
-        logger::log_error(
-          json_payload,
-          namespace = .telemetry_ns # nolint object_usage_linter
+        log_fields$error_message <- e$message
+        log_fields$duration_ms <- round(duration, 3)
+
+        # Use do.call to pass the list of fields as named arguments to the logger.
+        do.call(
+          logger::log_error,
+          c(
+            list(
+              "{event}: error",
+              event = event,
+              status = "error",
+              namespace = .telemetry_ns
+            ),
+            log_fields
+          )
         )
 
         stop(e) # Re-throw original error
