@@ -25,40 +25,32 @@ test_that("start_telemetry_logging creates log directory and log file after firs
   unlink(temp_log_dir, recursive = TRUE)
 })
 
-test_that("start_telemetry_logging uses mocked R user data folder", {
+test_that("start_telemetry_logging correctly resolves log_dir via get_user_data_dir()", { # nolint line_length_linter
+
   temp_log_dir <- tempfile("mocked_user_data_dir_")
   dir.create(temp_log_dir)
 
-  mockr::with_mock(
-    `get_user_data_dir` = function(package = "impact.telemetry") {
-      expect_equal(package, "impact.telemetry")
-      temp_log_dir
-    },
-    {
-      log_file <- suppressMessages(start_telemetry_logging(log_dir = NULL))
+  withr::local_envvar(IMPACT_TELEMETRY_USER_DIR = temp_log_dir)
 
-      expect_true(dir.exists(temp_log_dir))
-      expect_true(
-        startsWith(
-          normalizePath(dirname(log_file)),
-          normalizePath(temp_log_dir)
-        )
-      )
+  log_file <- suppressMessages(start_telemetry_logging(log_dir = NULL))
 
-      expect_false(file.exists(log_file))
+  expect_true(dir.exists(temp_log_dir))
 
-      logger::log_info(
-        "Test log entry (mocked user dir)",
-        namespace = get(".telemetry_ns",
-          envir = asNamespace("impact.telemetry")
-        )
-      )
-      expect_true(file.exists(log_file))
-
-      log_contents <- readLines(log_file)
-      expect_true(length(log_contents) > 0)
-    }
+  expect_true(
+    startsWith(normalizePath(dirname(log_file)), normalizePath(temp_log_dir))
   )
+
+  expect_false(file.exists(log_file))
+
+  logger::log_info(
+    "Test log entry (mocked user dir)",
+    namespace = get(".telemetry_ns", envir = asNamespace("impact.telemetry"))
+  )
+
+  expect_true(file.exists(log_file))
+
+  log_contents <- readLines(log_file)
+  expect_true(length(log_contents) > 0)
 
   unlink(temp_log_dir, recursive = TRUE)
 })

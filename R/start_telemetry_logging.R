@@ -42,7 +42,6 @@ start_telemetry_logging <- function(log_dir = NULL, threshold = logger::INFO) {
 
   log_file <- file.path(log_dir, sprintf("telemetry-%s.log", Sys.getpid()))
 
-  # Use the logger's built-in JSON layout instead of custom formatters.
   logger::log_layout(logger::layout_json(), namespace = .telemetry_ns)
   logger::log_threshold(threshold, namespace = .telemetry_ns)
   logger::log_appender(
@@ -52,8 +51,9 @@ start_telemetry_logging <- function(log_dir = NULL, threshold = logger::INFO) {
 
   .pkg_env$is_initialized <- TRUE
 
-  # Use cli for more structured and aesthetically pleasing console messages.
-  cli::cli_alert_success("Telemetry logging started. Log file: {.path {basename(log_file)}}")
+  cli::cli_alert_success(
+    "Telemetry logging started. Log file: {.path {basename(log_file)}}"
+  )
 
   invisible(log_file)
 }
