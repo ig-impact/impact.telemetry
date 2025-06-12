@@ -44,7 +44,12 @@ with_telemetry <- function(f,
   function(...) {
     if (!isTRUE(.pkg_env$is_initialized)) {
       cli::cli_warn(
-        "impact.telemetry has not been initialized. Call start_telemetry_logging() to enable logging."
+        paste0(
+          c(
+            "impact.telemetry has not been initialized. Call ",
+            "start_telemetry_logging() to enable logging."
+          )
+        )
       )
       return(f(...))
     }
@@ -72,7 +77,6 @@ with_telemetry <- function(f,
           log_fields$result <- res
         }
 
-        # Use do.call to pass the list of fields as named arguments to the logger.
         do.call(
           logger::log_info,
           c(
@@ -96,7 +100,6 @@ with_telemetry <- function(f,
         log_fields$error_message <- e$message
         log_fields$duration_ms <- round(duration, 3)
 
-        # Use do.call to pass the list of fields as named arguments to the logger.
         do.call(
           logger::log_error,
           c(
@@ -110,7 +113,7 @@ with_telemetry <- function(f,
           )
         )
 
-        stop(e) # Re-throw original error
+        cli::cli_abort(e)
       }
     )
   }

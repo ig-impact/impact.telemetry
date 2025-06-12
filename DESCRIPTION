@@ -20,5 +20,6 @@ Imports:
     lifecycle,
     logger
 Suggests: 
+    mockr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -33,7 +33,7 @@ NULL
 #' }
 start_telemetry_logging <- function(log_dir = NULL, threshold = logger::INFO) {
   if (is.null(log_dir)) {
-    log_dir <- tools::R_user_dir("impact.telemetry", "data")
+    log_dir <- get_user_data_dir()
   }
 
   if (!dir.exists(log_dir)) {

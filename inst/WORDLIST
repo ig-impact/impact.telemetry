@@ -11,6 +11,7 @@ Iyed
 jsonlite
 Lifecycle
 lifecycle
+mockr
 Roxygen
 RoxygenNote
 testthat
